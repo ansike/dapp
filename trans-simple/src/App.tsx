@@ -1,34 +1,47 @@
-import React, { useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import Web3 from 'web3';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import Web3 from "web3";
 
+console.log(Web3.givenProvider);
+
+const web3 = new Web3((window as any).web3.currentProvider || "http://127.0.0.1:8545");
 function App() {
-  useEffect(()=>{
-    const web3 = new Web3("http://localhost:8545");
-    web3.eth.getBlockNumber().then((res) => {
-      console.log("blockNumber", res);
-    });
-    web3.eth.getChainId().then((res) => {
-      console.log("chainID", res);
-    });
-  },[])
+  const [curAccount, setCurAccount] = useState<string>("");
+  const [desAccount, setDesAccount] = useState<string>("");
+  useEffect(() => {
+    getCurAccount();
+  }, []);
+
+  const transMoney = async () => {
+    web3.eth
+      .sendTransaction({
+        from: curAccount,
+        to: desAccount,
+        value: web3.utils.toWei("1", "ether"),
+      })
+      .then(function (receipt) {
+        console.log("transaction done", receipt);
+      });
+  };
+
+  const getCurAccount = async () => {
+    let accounts = await web3.eth.getAccounts();
+    
+    if (!accounts.length) {
+      accounts = await web3.eth.requestAccounts();
+    }
+    console.log('linked account：',accounts);
+    setCurAccount(accounts[0]);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <p>{curAccount}</p>
+      <input
+        type="text"
+        value={desAccount}
+        onChange={(e) => setDesAccount(e.target.value)}
+      />
+      <button onClick={transMoney}>transform</button>
     </div>
   );
 }
