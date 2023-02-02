@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hello world</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.2/web3.min.js"></script>
+  </head>
+  <body>
+    <p id="curAccount"></p>
+    <input type="text" id="desAccount" />
+    <button id="submit">发送</button>
+  </body>
+  <script>
+    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    console.log(web3);
+    web3.eth.getBlockNumber().then((res) => {
+      console.log("blockNumber", res);
+    });
+    web3.eth.getChainId().then((res) => {
+      console.log("chainID", res);
+    });
+
+    web3.eth
+      .getBalance("0x61983c3f1AFC53648e3ec0763bD51e91da1268e2")
+      .then((res) => {
+        console.log("balance", res);
+        console.log("ether", web3.utils.fromWei(res, "ether"));
+      });
+
+    // 每次都会发起一个转账交易
+    // web3.eth
+    //   .sendTransaction({
+    //     from: "0x61983c3f1AFC53648e3ec0763bD51e91da1268e2",
+    //     to: "0x5979Edee1bFF7693f1eD8DfBdF675d8389cAcEFf",
+    //     value: web3.utils.toWei("1", "ether"),
+    //   })
+    //   .then(function (receipt) {
+    //     console.log("transaction done", receipt);
+    //   });
+    initAccount();
+
+    document.querySelector("#submit").onclick = function () {
+      web3.eth
+        .sendTransaction({
+          from: document.querySelector("#curAccount").innerText,
+          to: document.querySelector("#desAccount").value,
+          value: web3.utils.toWei("1", "ether"),
+        })
+        .then(function (receipt) {
+          console.log("transaction done", receipt);
+        });
+    };
+
+    async function initAccount() {
+      let accounts = await web3.eth.getAccounts();
+      console.log(accounts);
+      if (!accounts.length) {
+        accounts = await web3.eth.requestAccounts();
+      }
+      document.querySelector("#curAccount").innerHTML = accounts[0];
+    }
+  </script>
+</html>
