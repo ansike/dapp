@@ -5,7 +5,7 @@ contract StudentStorage {
     uint public age;
     string public username;
 
-    function setData(uint256 _age, string memory _username) public {
+    function setData(uint _age, string memory _username) public {
         age = _age;
         username = _username;
     }

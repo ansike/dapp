@@ -1,5 +1,6 @@
 # hello truffle 
 
+### 编写简单脚本部署使用
 1. 安装配置truffle
 ```shell
 npm install -g truffle
@@ -89,12 +90,56 @@ truffle migrate
 ```
 
 5. 验证合约
-```shell
-truffle console
 
+- truffle console 测试
+```shell
 const obj = await StudentStorage.deployed()
 # truffle(development)> obj.username()
 # 'test'
 # truffle(development)> obj.age()
 # BN { negative: 0, words: [ 11, <1 empty item> ], length: 1, red: null }
 ```
+
+- mocha 测试
+- truffle 脚本测试
+创建 hello-truffle/scripts/test.js 文件
+```js
+const Contracts = artifacts.require("StudentStorage");
+
+module.exports = async function (callback) {
+  const obj = await Contracts.deployed();
+  await obj.setData(12, "test");
+  console.log(await obj.getData());
+  console.log(await obj.username());
+  console.log(await obj.age());
+
+  callback();
+};
+```
+执行shell
+```shell
+truffle exec ./scripts/test.js
+
+# Result {
+#   '0': 'test',
+#   '1': BN {
+#     negative: 0,
+#     words: [ 12, <1 empty item> ],
+#     length: 1,
+#     red: null
+#   }
+# }
+# test
+# BN { negative: 0, words: [ 12, <1 empty item> ], length: 1, red: null }
+```
+
+### 部署较复杂脚本
+
+相关文件准备
+hello-truffle/contracts/StudentStorage.sol
+hello-truffle/migrations/2_deploy.js
+hello-truffle/scripts/test2.js
+
+执行命令 truffle exec ./scripts/test2.js
+
+符合预期及可以
