@@ -13,6 +13,19 @@ contract Exchange {
     mapping(address => mapping(address => uint256)) public tokens;
     address constant ETHER = address(0); // 定义以太坊在当前地址下的地址
 
+    struct _Order {
+        uint256 id;
+        address user;
+        address token;
+        uint256 amount;
+        address exchangeToken;
+        uint256 exchangeAmount;
+        uint256 timestamp;
+    }
+    mapping(uint256 => _Order) public orders;
+    mapping(uint256 => bool) public cancleOrders;
+    uint256 public orderCount;
+
     // 交易所中哪个货币下，哪个用户，要存入金额，余额是多少
     event Deposit(address token, address user, uint256 amount, uint256 balance);
     // 交易所中哪个货币下，哪个用户，要提取金额，余额是多少
@@ -21,6 +34,24 @@ contract Exchange {
         address user,
         uint256 amount,
         uint256 balance
+    );
+    event OrderEvent(
+        uint256 id,
+        address user,
+        address token,
+        uint256 amount,
+        address exchangeToken,
+        uint256 exchangeAmount,
+        uint256 timestamp
+    );
+    event CancleOrderEvent(
+        uint256 id,
+        address user,
+        address token,
+        uint256 amount,
+        address exchangeToken,
+        uint256 exchangeAmount,
+        uint256 timestamp
     );
 
     constructor(address _feeAccount, uint256 _feePercent) {
@@ -51,7 +82,8 @@ contract Exchange {
     function withdrawEther(uint256 _amount) public {
         require(tokens[ETHER][msg.sender] >= _amount);
         tokens[ETHER][msg.sender] = tokens[ETHER][msg.sender].sub(_amount);
-        payable(msg.sender).transfer(_amount);  
+        // ETH内置的方法，不需要授权
+        payable(msg.sender).transfer(_amount);
         emit Withdraw(ETHER, msg.sender, _amount, tokens[ETHER][msg.sender]);
     }
 
@@ -63,4 +95,54 @@ contract Exchange {
         require(AskToken(_token).transfer(msg.sender, _amount));
         emit Withdraw(_token, msg.sender, _amount, tokens[_token][msg.sender]);
     }
+
+    // 创建订单池 eg: 100 AskToken 兑换 1 ETH
+    function makeOrder(
+        address _token,
+        uint256 _amount,
+        address _exchangeToken,
+        uint256 _exchangeAmount
+    ) public {
+        require(tokens[_token][msg.sender] >= _amount, unicode"当前余额不足");
+        orderCount = orderCount.add(1);
+        orders[orderCount] = _Order(
+            orderCount,
+            msg.sender,
+            _token,
+            _amount,
+            _exchangeToken,
+            _exchangeAmount,
+            block.timestamp
+        );
+
+        emit OrderEvent(
+            orderCount,
+            msg.sender,
+            _token,
+            _amount,
+            _exchangeToken,
+            _exchangeAmount,
+            block.timestamp
+        );
+    }
+
+    // // 取消订单
+    function cancleOrder(uint256 _id) public {
+        // 放置order不存在
+        _Order memory myOrder = orders[_id];
+        require(myOrder.id == _id);
+        cancleOrders[_id] = true;
+        emit CancleOrderEvent(
+            _id,
+            myOrder.user,
+            myOrder.token,
+            myOrder.amount,
+            myOrder.exchangeToken,
+            myOrder.exchangeAmount,
+            block.timestamp
+        );
+    }
+
+    // // 完成订单
+    // function fillOrder() {}
 }
