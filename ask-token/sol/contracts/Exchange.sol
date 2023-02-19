@@ -24,6 +24,7 @@ contract Exchange {
     }
     mapping(uint256 => _Order) public orders;
     mapping(uint256 => bool) public cancleOrders;
+    mapping(uint256 => bool) public fillOrders;
     uint256 public orderCount;
 
     // 交易所中哪个货币下，哪个用户，要存入金额，余额是多少
@@ -45,6 +46,15 @@ contract Exchange {
         uint256 timestamp
     );
     event CancleOrderEvent(
+        uint256 id,
+        address user,
+        address token,
+        uint256 amount,
+        address exchangeToken,
+        uint256 exchangeAmount,
+        uint256 timestamp
+    );
+    event FillOrderEvent(
         uint256 id,
         address user,
         address token,
@@ -128,7 +138,7 @@ contract Exchange {
 
     // // 取消订单
     function cancleOrder(uint256 _id) public {
-        // 放置order不存在
+        // 防止order不存在
         _Order memory myOrder = orders[_id];
         require(myOrder.id == _id);
         cancleOrders[_id] = true;
@@ -144,5 +154,39 @@ contract Exchange {
     }
 
     // // 完成订单
-    // function fillOrder() {}
+    function fillOrder(uint256 _id) public {
+        _Order memory myOrder = orders[_id];
+        require(myOrder.id == _id);
+        require(tokens[myOrder.token][myOrder.user] >= myOrder.amount, unicode"订单创建用户余额不足");
+        uint256 feeMount = myOrder.exchangeAmount.mul(feePercent).div(100);
+        require(tokens[myOrder.exchangeToken][msg.sender] >= myOrder.exchangeAmount.add(feeMount), unicode"订单交易用户余额不足");
+        // 账户余额互换，消费收取
+        tokens[myOrder.token][myOrder.user] = tokens[myOrder.token][
+            myOrder.user
+        ].sub(myOrder.amount);
+        tokens[myOrder.token][msg.sender] = tokens[myOrder.token][msg.sender]
+            .add(myOrder.amount);
+
+        tokens[myOrder.exchangeToken][myOrder.user] = tokens[
+            myOrder.exchangeToken
+        ][myOrder.user].add(myOrder.exchangeAmount);
+        tokens[myOrder.exchangeToken][msg.sender] = tokens[
+            myOrder.exchangeToken
+        ][msg.sender].sub(myOrder.exchangeAmount.add(feeMount));
+
+        tokens[myOrder.exchangeToken][feeAccount] = tokens[
+            myOrder.exchangeToken
+        ][feeAccount].add(feeMount);
+
+        fillOrders[_id] = true;
+        emit FillOrderEvent(
+            _id,
+            myOrder.user,
+            myOrder.token,
+            myOrder.amount,
+            myOrder.exchangeToken,
+            myOrder.exchangeAmount,
+            block.timestamp
+        );
+    }
 }
