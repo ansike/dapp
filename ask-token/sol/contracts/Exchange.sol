@@ -138,6 +138,8 @@ contract Exchange {
 
     // // 取消订单
     function cancleOrder(uint256 _id) public {
+        require(!cancleOrders[_id], unicode"订单已取消");
+        require(!fillOrders[_id], unicode"订单已完成");
         // 防止order不存在
         _Order memory myOrder = orders[_id];
         require(myOrder.id == _id);
@@ -155,11 +157,20 @@ contract Exchange {
 
     // // 完成订单
     function fillOrder(uint256 _id) public {
+        require(!cancleOrders[_id], unicode"订单已取消");
+        require(!fillOrders[_id], unicode"订单已完成");
         _Order memory myOrder = orders[_id];
-        require(myOrder.id == _id);
-        require(tokens[myOrder.token][myOrder.user] >= myOrder.amount, unicode"订单创建用户余额不足");
+        require(myOrder.id == _id, unicode"订单不存在");
+        require(
+            tokens[myOrder.token][myOrder.user] >= myOrder.amount,
+            unicode"订单创建用户余额不足"
+        );
         uint256 feeMount = myOrder.exchangeAmount.mul(feePercent).div(100);
-        require(tokens[myOrder.exchangeToken][msg.sender] >= myOrder.exchangeAmount.add(feeMount), unicode"订单交易用户余额不足");
+        require(
+            tokens[myOrder.exchangeToken][msg.sender] >=
+                myOrder.exchangeAmount.add(feeMount),
+            unicode"订单交易用户余额不足"
+        );
         // 账户余额互换，消费收取
         tokens[myOrder.token][myOrder.user] = tokens[myOrder.token][
             myOrder.user
