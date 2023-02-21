@@ -3,7 +3,7 @@
  * @Author: Ask
  * @LastEditors: Ask
  * @Date: 2023-02-19 14:36:41
- * @LastEditTime: 2023-02-19 15:33:21
+ * @LastEditTime: 2023-02-21 22:32:19
  */
 const AskToken = artifacts.require("AskToken.sol");
 const Exchange = artifacts.require("Exchange.sol");
@@ -50,8 +50,8 @@ module.exports = async function (callback) {
   // // const res2 = await exchange.cancleOrder(1);
   // // console.log(res2.logs[0].args[0]);
   
-  // // 3. 完成订单
-  const res3 = await exchange.fillOrder(3, {from: accounts[1]});
+  // // // 3. 完成订单
+  // const res3 = await exchange.fillOrder(0, {from: accounts[1]});
   // console.log(res3.logs[0].args[0]);
 
   const balanceof4 = await exchange.tokens(askToken.address, accounts[1]);

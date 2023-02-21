@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 // 为 slice state 定义一个类型
 interface BalanceSliceState {
@@ -44,3 +45,30 @@ export const {
 } = balanceSlice.actions
 
 export default balanceSlice.reducer
+
+export const loadBalanceData = createAsyncThunk(
+  'balance/fetchBalanceData',
+  async (data, { dispatch }) => {
+    const { web3, token, exchange, account } = data as any
+    // 钱包余额
+    const TokenWallet = await token.methods.balanceOf(account).call()
+    dispatch(setTokenWallet(TokenWallet))
+
+    // 交易所余额
+    const TokenExchange = await exchange.methods
+      .tokens(token.options.address, account)
+      .call()
+    dispatch(setTokenExchange(TokenExchange))
+
+    // ETH余额
+    const EtherWallet = await web3.eth.getBalance(account)
+    dispatch(setEtherWallet(EtherWallet))
+
+    const EtherExchange = await exchange.methods
+      .tokens(ETH_ADDRESS, account)
+      .call()
+    dispatch(setEtherExchange(EtherExchange))
+
+    // ETH在交易所余额
+  }
+)
