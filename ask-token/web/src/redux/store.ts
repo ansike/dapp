@@ -1,10 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
 import balanceSlice from './slices/balanceSlice'
+import orderSlice from './slices/orderSlice'
 
 export const store = configureStore({
   reducer: {
-    balance: balanceSlice
-  }
+    balance: balanceSlice,
+    order: orderSlice
+  },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: false
+    })
 })
 
 // 从 store 本身推断出 `RootState` 和 `AppDispatch` 类型

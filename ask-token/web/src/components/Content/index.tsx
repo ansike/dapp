@@ -6,6 +6,11 @@ import { useDispatch } from 'react-redux'
 import tokenJson from '../../sol/AskToken.json'
 import exchangeJson from '../../sol/Exchange.json'
 import { loadBalanceData } from '../../redux/slices/balanceSlice'
+import {
+  loadCancleOrderData,
+  loadFillOrderData,
+  loadAllOrderData
+} from '../../redux/slices/orderSlice'
 
 export default function Content () {
   const dispatch = useDispatch()
@@ -14,10 +19,16 @@ export default function Content () {
   }, [])
 
   const start = async () => {
-    const web = await initWeb() as any
-    (window as any).web = web
+    const web = (await initWeb()) as any
+    ;(window as any).web = web
     // @ts-ignore
     dispatch<any>(loadBalanceData(web))
+    // @ts-ignore
+    dispatch<any>(loadCancleOrderData(web))
+    // @ts-ignore
+    dispatch<any>(loadFillOrderData(web))
+    // @ts-ignore
+    dispatch<any>(loadAllOrderData(web))
   }
   const initWeb = async () => {
     const web3 = new Web3(

@@ -17295,12 +17295,12 @@
     "1676899961915": {
       "events": {},
       "links": {},
-      "address": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
-      "transactionHash": "0x7a2ab1a6a7c0f98069fb9d7fb64dafb5d9af655619f8725c58ba01f571c5b224"
+      "address": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e",
+      "transactionHash": "0x55cf11798dfc0ea3217a2e1b892523fe64e67096e5ce9e17e29d8ac5db07c625"
     }
   },
   "schemaVersion": "3.4.11",
-  "updatedAt": "2023-02-20T13:48:56.337Z",
+  "updatedAt": "2023-02-22T16:15:18.973Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
